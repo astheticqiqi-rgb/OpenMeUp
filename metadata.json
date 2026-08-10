@@ -1,0 +1,6 @@
+{
+  "name": "OpenMeUp",
+  "description": "A cozy, aesthetic love and friendship web app featuring letters, games, photo memories, Bible verses, daily reminders, and ambient music.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
