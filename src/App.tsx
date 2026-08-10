@@ -1,16 +1,17 @@
 import React, { useState } from 'react';
-import { Mail, Gamepad2, Camera, BookOpen, Sun, Heart, Sparkles, Home, Music } from 'lucide-react';
+import { Mail, Gamepad2, Camera, BookOpen, Sun, Heart, Sparkles, Home, Music, Flame } from 'lucide-react';
 import { IntroPage } from './components/IntroPage';
 import { LetterPage } from './components/LetterPage';
 import { GamesPage } from './components/GamesPage';
 import { MemoriesPage } from './components/MemoriesPage';
 import { BiblePage } from './components/BiblePage';
 import { RemindersPage } from './components/RemindersPage';
+import { WarmthJarPage } from './components/WarmthJarPage';
 import { AudioPlayer } from './components/AudioPlayer';
 
 export default function App() {
   const [hasOpenedIntro, setHasOpenedIntro] = useState(false);
-  const [activeTab, setActiveTab] = useState<'letter' | 'games' | 'memories' | 'bible' | 'reminders'>('letter');
+  const [activeTab, setActiveTab] = useState<'letter' | 'jar' | 'games' | 'memories' | 'bible' | 'reminders'>('letter');
 
   if (!hasOpenedIntro) {
     return <IntroPage onOpenApp={() => setHasOpenedIntro(true)} />;
@@ -18,6 +19,7 @@ export default function App() {
 
   const tabs = [
     { id: 'letter', label: 'Love Letter', icon: Mail },
+    { id: 'jar', label: 'Warmth Jar', icon: Flame },
     { id: 'games', label: 'Cozy Arcade', icon: Gamepad2 },
     { id: 'memories', label: 'Memories', icon: Camera },
     { id: 'bible', label: 'Bible Verses', icon: BookOpen },
@@ -118,6 +120,7 @@ export default function App() {
       {/* Main Tab Content View */}
       <main className="flex-1 relative z-10 py-6">
         {activeTab === 'letter' && <LetterPage />}
+        {activeTab === 'jar' && <WarmthJarPage />}
         {activeTab === 'games' && <GamesPage />}
         {activeTab === 'memories' && <MemoriesPage />}
         {activeTab === 'bible' && <BiblePage />}

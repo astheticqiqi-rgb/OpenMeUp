@@ -1,24 +1,26 @@
 import React, { useState, useEffect } from 'react';
 import { Sparkles, RefreshCw, Trophy, Heart, Flame, Clock, Award } from 'lucide-react';
 import confetti from 'canvas-confetti';
+import puppyImg from '../assets/images/cute_puppy_card_1786352817541.jpg';
 
 interface Card {
   id: number;
   symbol: string;
+  imageUrl?: string;
   name: string;
   isFlipped: boolean;
   isMatched: boolean;
 }
 
 const CARD_SYMBOLS = [
-  { symbol: '💖', name: 'Warm Heart' },
-  { symbol: '☕', name: 'Cozy Coffee' },
-  { symbol: '🍕', name: 'Pizza Slice' },
-  { symbol: '🐶', name: 'Cute Puppy' },
-  { symbol: '🌸', name: 'Cherry Blossom' },
-  { symbol: '🎂', name: 'Birthday Cake' },
-  { symbol: '🍩', name: 'Sweet Donut' },
-  { symbol: '🌟', name: 'Glowing Star' },
+  { symbol: '🐶', name: 'Cute Puppy', imageUrl: puppyImg },
+  { symbol: '💖', name: 'Warm Heart', imageUrl: 'https://images.unsplash.com/photo-1518199266791-5375a83190b7?q=80&w=300&auto=format&fit=crop' },
+  { symbol: '☕', name: 'Cozy Coffee', imageUrl: 'https://images.unsplash.com/photo-1517841905240-472988babdf9?q=80&w=300&auto=format&fit=crop' },
+  { symbol: '🍕', name: 'Pizza Slice', imageUrl: 'https://images.unsplash.com/photo-1513104890138-7c749659a591?q=80&w=300&auto=format&fit=crop' },
+  { symbol: '🌸', name: 'Cherry Blossom', imageUrl: 'https://images.unsplash.com/photo-1522383225653-ed111181a951?q=80&w=300&auto=format&fit=crop' },
+  { symbol: '🎂', name: 'Birthday Cake', imageUrl: 'https://images.unsplash.com/photo-1530103862676-de8c9debad1d?q=80&w=300&auto=format&fit=crop' },
+  { symbol: '🍩', name: 'Sweet Donut', imageUrl: 'https://images.unsplash.com/photo-1527515637462-cff94eecc1ac?q=80&w=300&auto=format&fit=crop' },
+  { symbol: '🌟', name: 'Glowing Star', imageUrl: 'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?q=80&w=300&auto=format&fit=crop' },
 ];
 
 export const WarmthCardMatchGame: React.FC = () => {
@@ -46,6 +48,7 @@ export const WarmthCardMatchGame: React.FC = () => {
       deck.push({
         id: index * 2,
         symbol: item.symbol,
+        imageUrl: item.imageUrl,
         name: item.name,
         isFlipped: false,
         isMatched: false,
@@ -53,6 +56,7 @@ export const WarmthCardMatchGame: React.FC = () => {
       deck.push({
         id: index * 2 + 1,
         symbol: item.symbol,
+        imageUrl: item.imageUrl,
         name: item.name,
         isFlipped: false,
         isMatched: false,
@@ -267,8 +271,16 @@ export const WarmthCardMatchGame: React.FC = () => {
 
                 {/* Front side of card (flipped) */}
                 {isSelected && (
-                  <div className="flex flex-col items-center justify-center gap-1 animate-in zoom-in-75 duration-300">
-                    <span className="text-3xl sm:text-4xl">{card.symbol}</span>
+                  <div className="flex flex-col items-center justify-center gap-1 animate-in zoom-in-75 duration-300 w-full h-full p-1">
+                    {card.imageUrl ? (
+                      <img
+                        src={card.imageUrl}
+                        alt={card.name}
+                        className="w-12 h-12 sm:w-16 sm:h-16 object-cover rounded-xl shadow-md border border-[#ADC178]/40"
+                      />
+                    ) : (
+                      <span className="text-3xl sm:text-4xl">{card.symbol}</span>
+                    )}
                     <span className="text-[10px] font-bold text-[#4a5038] truncate max-w-full">
                       {card.name}
                     </span>

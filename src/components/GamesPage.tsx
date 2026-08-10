@@ -12,9 +12,9 @@ export const GamesPage: React.FC = () => {
 
   const gamesList = [
     { id: 'cardmatch', title: 'Warmth Card Match', icon: '🎴', desc: 'Flip cards to match warm memory pairs!' },
-    { id: 'mario', title: 'Super Mario & Defender', icon: '🍄', desc: 'Jump, collect coins & shoot fireball hearts!' },
+    { id: 'mario', title: 'Super Mario Game', icon: '🍄', desc: 'Play classic Super Mario Bros online!' },
     { id: 'block', title: 'Block Breaker', icon: '🧱', desc: 'Bounce the glowing sphere & smash blocks!' },
-    { id: 'baseball', title: 'Home Run Derby', icon: '⚾', desc: 'Time your swing & smash baseballs over the fence!' },
+    { id: 'baseball', title: 'Flappy Bird', icon: '🐤', desc: 'Flap your wings and fly through green pipes!' },
     { id: 'snake', title: 'Cozy Snake', icon: '🐍', desc: 'Snake game with customizable puppy treats!' },
     { id: 'jigsaw', title: 'Photo Jigsaw', icon: '🧩', desc: 'Swap photo tiles to solve sweet memory pictures!' },
   ];

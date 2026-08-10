@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Play, RotateCcw, Volume2, VolumeX, ArrowUp, ArrowDown, ArrowLeft, ArrowRight, Dog, Heart, Apple } from 'lucide-react';
+import puppyImg from '../assets/images/cute_puppy_card_1786352817541.jpg';
 
 const playEatSound = () => {
   try {
@@ -133,12 +134,16 @@ export const SnakeGame: React.FC = () => {
       const fy = foodRef.current.y * gridSize;
 
       if (foodType === 'puppy') {
-        ctx.fillStyle = '#D7CCC8';
-        ctx.beginPath();
-        ctx.arc(fx + gridSize / 2, fy + gridSize / 2, gridSize / 2 - 1, 0, Math.PI * 2);
-        ctx.fill();
-        ctx.fillStyle = '#000000';
-        ctx.fillText('🐶', fx + 1, fy + 14);
+        const img = new Image();
+        img.src = puppyImg;
+        if (img.complete) {
+          ctx.drawImage(img, fx, fy, gridSize, gridSize);
+        } else {
+          ctx.fillStyle = '#D7CCC8';
+          ctx.beginPath();
+          ctx.arc(fx + gridSize / 2, fy + gridSize / 2, gridSize / 2 - 1, 0, Math.PI * 2);
+          ctx.fill();
+        }
       } else if (foodType === 'heart') {
         ctx.fillStyle = '#E91E63';
         ctx.beginPath();
@@ -175,9 +180,10 @@ export const SnakeGame: React.FC = () => {
         <div className="flex items-center gap-1 bg-stone-100 p-1 rounded-2xl">
           <button
             onClick={() => setFoodType('puppy')}
-            className={`px-3 py-1 rounded-xl text-xs font-bold transition-colors ${foodType === 'puppy' ? 'bg-[#68704F] text-white' : 'text-stone-600'}`}
+            className={`px-3 py-1 rounded-xl text-xs font-bold transition-colors flex items-center gap-1.5 ${foodType === 'puppy' ? 'bg-[#68704F] text-white' : 'text-stone-600'}`}
           >
-            🐶 Puppy
+            <img src={puppyImg} alt="Puppy" className="w-4 h-4 rounded-full object-cover inline-block" />
+            <span>Puppy</span>
           </button>
           <button
             onClick={() => setFoodType('heart')}

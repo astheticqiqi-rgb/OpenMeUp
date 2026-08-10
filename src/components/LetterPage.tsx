@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Heart, Edit3, Copy, Download, RefreshCw, Dog, Flower2, Star, Sparkles, Check, Share2 } from 'lucide-react';
 import confetti from 'canvas-confetti';
 import { DEFAULT_LETTER } from '../data/content';
+import cuteDogLetterImg from '../assets/images/cute_dog_letter_1786353552000.jpg';
 
 export const LetterPage: React.FC = () => {
   const [letter, setLetter] = useState(DEFAULT_LETTER);
@@ -30,7 +31,7 @@ export const LetterPage: React.FC = () => {
   };
 
   const handleCopy = () => {
-    const fullText = `${letter.title}\nTo: ${letter.recipient}\nDate: ${letter.date}\n\n${letter.content}\n\nWith love,\n${letter.sender}`;
+    const fullText = `${letter.title}\nTo: ${letter.recipient}\n\n${letter.content}\n\nWith love,\n${letter.sender}`;
     navigator.clipboard.writeText(fullText);
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
@@ -46,10 +47,10 @@ export const LetterPage: React.FC = () => {
   };
 
   const stamps = [
-    { id: 'puppy', label: 'Cute Puppy', icon: '🐶' },
-    { id: 'heart', label: 'Wax Heart', icon: '❤️' },
-    { id: 'flower', label: 'Sage Blossom', icon: '🌸' },
-    { id: 'star', label: 'Sparkle Star', icon: '✨' },
+    { id: 'puppy', label: 'Cute Dog Letter', image: cuteDogLetterImg, icon: '🐶' },
+    { id: 'heart', label: 'Wax Heart', image: 'https://images.unsplash.com/photo-1518199266791-5375a83190b7?q=80&w=200&auto=format&fit=crop', icon: '❤️' },
+    { id: 'flower', label: 'Sage Blossom', image: 'https://images.unsplash.com/photo-1522383225653-ed111181a951?q=80&w=200&auto=format&fit=crop', icon: '🌸' },
+    { id: 'star', label: 'Sparkle Star', image: 'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?q=80&w=200&auto=format&fit=crop', icon: '✨' },
   ];
 
   const fontClasses = {
@@ -123,7 +124,11 @@ export const LetterPage: React.FC = () => {
                 onClick={() => setLetter({ ...letter, selectedStamp: st.id })}
                 className={`flex items-center gap-2 px-3 py-2 rounded-xl border transition-all cursor-pointer ${letter.selectedStamp === st.id ? 'border-[#ADC178] bg-[#ADC178]/25 font-bold text-white' : 'border-white/20 bg-white/5 hover:bg-white/10 text-white/80'}`}
               >
-                <span className="text-xl">{st.icon}</span>
+                {st.image ? (
+                  <img src={st.image} alt={st.label} className="w-6 h-6 rounded-lg object-cover border border-white/30" />
+                ) : (
+                  <span className="text-xl">{st.icon}</span>
+                )}
                 <span className="text-xs">{st.label}</span>
               </button>
             ))}
@@ -167,20 +172,21 @@ export const LetterPage: React.FC = () => {
 
           {/* Stamp Badge */}
           <div className="relative w-20 h-24 bg-[#68704f]/10 backdrop-blur-md border border-[#ADC178]/40 rounded-2xl p-2 flex flex-col items-center justify-center shadow-md transform rotate-2">
-            <span className="text-3xl mb-1">
-              {stamps.find(s => s.id === letter.selectedStamp)?.icon || '🐶'}
+            <span className="mb-1 flex items-center justify-center">
+              {(() => {
+                const currentStamp = stamps.find((s) => s.id === letter.selectedStamp) || stamps[0];
+                return currentStamp?.image ? (
+                  <img
+                    src={currentStamp.image}
+                    alt={currentStamp.label}
+                    className="w-10 h-10 object-cover rounded-xl shadow-md border border-[#ADC178]/50"
+                  />
+                ) : (
+                  <span className="text-3xl">{currentStamp?.icon || '🐶'}</span>
+                );
+              })()}
             </span>
             <span className="text-[9px] font-bold text-[#68704F] tracking-widest uppercase">AIR MAIL</span>
-            {isEditing ? (
-              <input
-                type="text"
-                value={letter.date}
-                onChange={(e) => setLetter({ ...letter, date: e.target.value })}
-                className="text-[8px] text-stone-400 text-center border-b border-stone-200 focus:outline-none w-full mt-0.5 bg-transparent"
-              />
-            ) : (
-              <span className="text-[9px] text-stone-400 mt-0.5">{letter.date}</span>
-            )}
           </div>
         </div>
 
