@@ -1,3 +1,8 @@
+import { PuzzlePreset } from '../types';
+import memImg1 from '../assets/images/cozy_cafe_aesthetic_1786352347476.jpg';
+import memImg2 from '../assets/images/regenerated_image_1786352002106.jpg';
+import memImg3 from '../assets/images/regenerated_image_1786352003050.jpg';
+
 export interface MemoryPhoto {
   id: string;
   title: string;
@@ -7,6 +12,33 @@ export interface MemoryPhoto {
   imageUrl: string;
   tag: 'cozy' | 'travel' | 'funny' | 'celebration' | 'sweet';
 }
+
+export const PUZZLE_PRESETS: PuzzlePreset[] = [
+  {
+    id: 'puz-1',
+    name: 'Sunlit Sunflowers 🌻',
+    image: 'https://images.unsplash.com/photo-1597848212624-a19eb35e2651?q=80&w=800&auto=format&fit=crop',
+    gridSize: 3
+  },
+  {
+    id: 'puz-2',
+    name: 'Cozy Coffee & Flowers ☕',
+    image: 'https://images.unsplash.com/photo-1514432324607-a09d9b4aefdd?q=80&w=800&auto=format&fit=crop',
+    gridSize: 3
+  },
+  {
+    id: 'puz-3',
+    name: 'Cute Golden Puppy 🐶',
+    image: 'https://images.unsplash.com/photo-1552053831-71594a27632d?q=80&w=800&auto=format&fit=crop',
+    gridSize: 4
+  },
+  {
+    id: 'puz-4',
+    name: 'Pastel Sunset Beach 🌅',
+    image: 'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?q=80&w=800&auto=format&fit=crop',
+    gridSize: 4
+  }
+];
 
 export interface BibleVerse {
   id: string;
@@ -39,53 +71,7 @@ Thank you for being your wonderful, amazing self! Here's to making countless mor
   fontStyle: 'handwriting' as 'handwriting' | 'script' | 'serif',
 };
 
-export const DEFAULT_MEMORIES: MemoryPhoto[] = [
-  {
-    id: '1',
-    title: 'Warm Coffee & Laughs',
-    date: 'Autumn Afternoon',
-    location: 'Our Favorite Cafe',
-    caption: 'That cozy spot by the window where hours felt like seconds.',
-    imageUrl: 'https://images.unsplash.com/photo-1517841905240-472988babdf9?q=80&w=800&auto=format&fit=crop',
-    tag: 'cozy'
-  },
-  {
-    id: '2',
-    title: 'Puppy Park Date',
-    date: 'Sunny Saturday',
-    location: 'Grassy Meadow',
-    caption: 'Chasing puppies and taking endless sweet photos under the tree.',
-    imageUrl: 'https://images.unsplash.com/photo-1543466835-00a7907e9de1?q=80&w=800&auto=format&fit=crop',
-    tag: 'sweet'
-  },
-  {
-    id: '3',
-    title: 'Sunset Beach Walk',
-    date: 'Summer Evening',
-    location: 'Golden Coast',
-    caption: 'Golden hour waves, cool sea breeze, and hands warm together.',
-    imageUrl: 'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?q=80&w=800&auto=format&fit=crop',
-    tag: 'travel'
-  },
-  {
-    id: '4',
-    title: 'Late Night Games & Pizza',
-    date: 'Cozy Weekend',
-    location: 'Living Room Fort',
-    caption: 'Competing in classic games while eating slices on the floor.',
-    imageUrl: 'https://images.unsplash.com/photo-1513104890138-7c749659a591?q=80&w=800&auto=format&fit=crop',
-    tag: 'funny'
-  },
-  {
-    id: '5',
-    title: 'Birthday Candle Wish',
-    date: 'Special Day',
-    location: 'Home Sweet Home',
-    caption: 'Blowing out candles with the biggest smile on your face.',
-    imageUrl: 'https://images.unsplash.com/photo-1530103862676-de8c9debad1d?q=80&w=800&auto=format&fit=crop',
-    tag: 'celebration'
-  }
-];
+export const DEFAULT_MEMORIES: MemoryPhoto[] = [];
 
 export const DEFAULT_BIBLE_VERSES: BibleVerse[] = [
   {

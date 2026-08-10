@@ -1,193 +1,244 @@
-import React, { useState, useEffect } from 'react';
-import { Play, RotateCcw, Eye, Trophy, Sparkles, Image as ImageIcon } from 'lucide-react';
+import React, { useState, useEffect, useRef } from 'react';
+import { RefreshCw, Trophy, Upload, ImagePlus, Camera } from 'lucide-react';
 import confetti from 'canvas-confetti';
-
-interface Tile {
-  id: number;
-  currentPos: number;
-  correctPos: number;
-}
+import { PUZZLE_PRESETS } from '../data/content';
+import { PuzzlePreset } from '../types';
+import { CameraFilterStudio } from './CameraFilterStudio';
 
 export const JigsawPuzzleGame: React.FC = () => {
-  const [gridSize, setGridSize] = useState<3 | 4>(3);
-  const [selectedPhoto, setSelectedPhoto] = useState<string>(
-    'https://images.unsplash.com/photo-1543466835-00a7907e9de1?q=80&w=800&auto=format&fit=crop'
-  );
-  const [tiles, setTiles] = useState<Tile[]>([]);
-  const [selectedIndex, setSelectedIndex] = useState<number | null>(null);
+  const [presets, setPresets] = useState<PuzzlePreset[]>(PUZZLE_PRESETS);
+  const [selectedPreset, setSelectedPreset] = useState<PuzzlePreset>(PUZZLE_PRESETS[0]);
+  const [gridSize, setGridSize] = useState<number>(PUZZLE_PRESETS[0].gridSize);
+  const [pieces, setPieces] = useState<number[]>([]);
+  const [selectedPiece, setSelectedPiece] = useState<number | null>(null);
   const [moves, setMoves] = useState(0);
-  const [showPreview, setShowPreview] = useState(false);
-  const [isSolved, setIsSolved] = useState(false);
-  const [gameStarted, setGameStarted] = useState(false);
+  const [isCompleted, setIsCompleted] = useState(false);
+  const [isCameraStudioOpen, setIsCameraStudioOpen] = useState(false);
 
-  const photoOptions = [
-    { id: '1', name: 'Puppy Meadow', url: 'https://images.unsplash.com/photo-1543466835-00a7907e9de1?q=80&w=800&auto=format&fit=crop' },
-    { id: '2', name: 'Cozy Coffee', url: 'https://images.unsplash.com/photo-1517841905240-472988babdf9?q=80&w=800&auto=format&fit=crop' },
-    { id: '3', name: 'Golden Sunset', url: 'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?q=80&w=800&auto=format&fit=crop' },
-  ];
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
-  const initPuzzle = () => {
+  const initializePuzzle = () => {
     const total = gridSize * gridSize;
-    const initialTiles: Tile[] = [];
-    for (let i = 0; i < total; i++) {
-      initialTiles.push({ id: i, currentPos: i, correctPos: i });
+    const initial = Array.from({ length: total }, (_, i) => i);
+    let shuffled = [...initial];
+    // Ensure the initial shuffle isn't already solved
+    while (JSON.stringify(shuffled) === JSON.stringify(initial)) {
+      shuffled.sort(() => Math.random() - 0.5);
     }
-
-    // Shuffle tiles
-    const shuffled = [...initialTiles];
-    for (let i = shuffled.length - 1; i > 0; i--) {
-      const j = Math.floor(Math.random() * (i + 1));
-      [shuffled[i].currentPos, shuffled[j].currentPos] = [shuffled[j].currentPos, shuffled[i].currentPos];
-    }
-
-    setTiles(shuffled);
-    setSelectedIndex(null);
+    setPieces(shuffled);
+    setSelectedPiece(null);
     setMoves(0);
-    setIsSolved(false);
-    setGameStarted(true);
+    setIsCompleted(false);
   };
 
+  useEffect(() => {
+    setGridSize(selectedPreset.gridSize);
+  }, [selectedPreset]);
+
+  useEffect(() => {
+    initializePuzzle();
+  }, [selectedPreset, gridSize]);
+
   const handleTileClick = (index: number) => {
-    if (isSolved) return;
+    if (isCompleted) return;
 
-    if (selectedIndex === null) {
-      setSelectedIndex(index);
+    if (selectedPiece === null) {
+      setSelectedPiece(index);
     } else {
-      // Swap tiles at selectedIndex and index
-      const newTiles = [...tiles];
-      const temp = newTiles[selectedIndex].currentPos;
-      newTiles[selectedIndex].currentPos = newTiles[index].currentPos;
-      newTiles[index].currentPos = temp;
+      // Swap piece at selectedPiece with tile at index
+      const newPieces = [...pieces];
+      const temp = newPieces[selectedPiece];
+      newPieces[selectedPiece] = newPieces[index];
+      newPieces[index] = temp;
 
-      setTiles(newTiles);
-      setSelectedIndex(null);
+      setPieces(newPieces);
+      setSelectedPiece(null);
       setMoves((m) => m + 1);
 
-      // Check if puzzle is solved
-      const solved = newTiles.every((tile, idx) => tile.currentPos === idx);
-      if (solved) {
-        setIsSolved(true);
-        confetti({ particleCount: 100, spread: 80, origin: { y: 0.6 } });
+      // Check win condition
+      const isSolved = newPieces.every((val, i) => val === i);
+      if (isSolved) {
+        setIsCompleted(true);
+        confetti({ particleCount: 80, spread: 100, origin: { y: 0.6 } });
       }
     }
   };
 
+  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      const dataUrl = event.target?.result as string;
+      if (!dataUrl) return;
+
+      const customPreset: PuzzlePreset = {
+        id: `custom-${Date.now()}`,
+        name: `My Imported Photo 📷`,
+        image: dataUrl,
+        gridSize: 3,
+      };
+
+      setPresets((prev) => [customPreset, ...prev]);
+      setSelectedPreset(customPreset);
+      setGridSize(3);
+    };
+    reader.readAsDataURL(file);
+    // Reset input value
+    e.target.value = '';
+  };
+
   return (
-    <div className="w-full bg-white border border-[#ADC178]/40 shadow-xl rounded-3xl p-6 flex flex-col items-center">
-      {/* Top Photo & Grid Size Selector */}
-      <div className="flex flex-wrap items-center justify-between w-full max-w-md mb-4 gap-2">
-        <div className="flex items-center gap-1 bg-stone-100 p-1 rounded-2xl">
-          {photoOptions.map((photo) => (
-            <button
-              key={photo.id}
-              onClick={() => {
-                setSelectedPhoto(photo.url);
-                setGameStarted(false);
-              }}
-              className={`px-3 py-1 rounded-xl text-xs font-bold transition-colors ${selectedPhoto === photo.url ? 'bg-[#68704F] text-white' : 'text-stone-600'}`}
-            >
-              {photo.name}
-            </button>
-          ))}
+    <div className="bg-white/95 backdrop-blur-2xl p-6 rounded-[32px] shadow-2xl border border-white/50 max-w-xl mx-auto text-center text-slate-800">
+      <div className="flex flex-wrap items-center justify-between gap-2 mb-4">
+        <div>
+          <h3 className="font-serif-title font-bold text-lg text-[#68704F] text-left">
+            {selectedPreset.name}
+          </h3>
+          <p className="text-[11px] text-stone-500 text-left">
+            Click two tiles to swap their positions until the picture is whole!
+          </p>
         </div>
 
         <div className="flex items-center gap-2">
+          <span className="text-xs font-bold text-[#68704F] bg-[#ADC178]/20 px-3 py-1.5 rounded-full border border-[#ADC178]/30">
+            Moves: {moves}
+          </span>
           <button
-            onClick={() => {
-              setGridSize(gridSize === 3 ? 4 : 3);
-              setGameStarted(false);
-            }}
-            className="px-3 py-1 bg-stone-100 hover:bg-stone-200 text-stone-700 text-xs font-bold rounded-xl"
+            onClick={initializePuzzle}
+            className="p-2 rounded-full bg-[#ADC178] text-[#4a5038] hover:bg-[#68704F] hover:text-white transition-all shadow-md cursor-pointer"
+            title="Restart Puzzle"
           >
-            Grid: {gridSize}x{gridSize}
+            <RefreshCw className="w-4 h-4" />
           </button>
         </div>
       </div>
 
-      {/* Main Puzzle Board View */}
-      <div className="relative w-full max-w-md aspect-square bg-stone-100 rounded-2xl overflow-hidden shadow-inner border-2 border-[#ADC178] p-2">
-        {!gameStarted ? (
-          <div className="absolute inset-0 bg-black/50 backdrop-blur-sm flex flex-col items-center justify-center text-white p-6 text-center z-10">
-            <h3 className="text-2xl font-bold font-aesthetic mb-2 text-[#E2ECE9]">🧩 Jigsaw Photo Puzzle</h3>
-            <p className="text-xs text-stone-200 mb-4 max-w-xs">
-              Click two tiles to swap their positions and reconstruct the photo memory!
-            </p>
-            <button
-              onClick={initPuzzle}
-              className="bg-[#ADC178] hover:bg-[#68704F] text-white px-6 py-2.5 rounded-full font-bold shadow-lg flex items-center gap-2 transition-transform hover:scale-105"
-            >
-              <Play className="w-4 h-4" /> Start Jigsaw
-            </button>
-          </div>
-        ) : (
-          <div
-            className="grid gap-1 w-full h-full"
-            style={{
-              gridTemplateColumns: `repeat(${gridSize}, minmax(0, 1fr))`,
-              gridTemplateRows: `repeat(${gridSize}, minmax(0, 1fr))`,
-            }}
+      {/* Preset Chooser & Import / Camera Buttons */}
+      <div className="flex items-center gap-2 overflow-x-auto pb-3 mb-3 justify-start sm:justify-center no-scrollbar">
+        <button
+          onClick={() => setIsCameraStudioOpen(true)}
+          className="flex items-center gap-1.5 text-xs px-3.5 py-1.5 rounded-full font-bold bg-[#68704F] hover:bg-[#535A3F] text-white shadow-md transition-all cursor-pointer shrink-0"
+        >
+          <Camera className="w-3.5 h-3.5" />
+          <span>Camera Snap</span>
+        </button>
+
+        <input
+          type="file"
+          ref={fileInputRef}
+          onChange={handleImageUpload}
+          accept="image/*"
+          className="hidden"
+        />
+        <button
+          onClick={() => fileInputRef.current?.click()}
+          className="flex items-center gap-1.5 text-xs px-3.5 py-1.5 rounded-full font-bold bg-[#ADC178] hover:bg-[#68704F] text-white shadow-md transition-all cursor-pointer shrink-0"
+        >
+          <ImagePlus className="w-3.5 h-3.5" />
+          <span>Import File</span>
+        </button>
+
+        {presets.map((p) => (
+          <button
+            key={p.id}
+            onClick={() => setSelectedPreset(p)}
+            className={`text-xs px-3.5 py-1.5 rounded-full font-semibold transition-all cursor-pointer shrink-0 ${
+              selectedPreset.id === p.id
+                ? 'bg-[#68704F] text-white shadow-md'
+                : 'bg-stone-100 hover:bg-stone-200 text-stone-700'
+            }`}
           >
-            {tiles.map((tile, idx) => {
-              const row = Math.floor(tile.currentPos / gridSize);
-              const col = tile.currentPos % gridSize;
-              const bgPosX = (col / (gridSize - 1)) * 100;
-              const bgPosY = (row / (gridSize - 1)) * 100;
-
-              return (
-                <div
-                  key={tile.id}
-                  onClick={() => handleTileClick(idx)}
-                  className={`relative w-full h-full rounded-lg overflow-hidden cursor-pointer transition-all ${selectedIndex === idx ? 'ring-4 ring-[#68704F] scale-95 z-10' : 'hover:opacity-90'}`}
-                  style={{
-                    backgroundImage: `url(${selectedPhoto})`,
-                    backgroundSize: `${gridSize * 100}% ${gridSize * 100}%`,
-                    backgroundPosition: `${bgPosX}% ${bgPosY}%`,
-                  }}
-                >
-                  <span className="absolute bottom-1 right-1 text-[9px] bg-black/50 text-white px-1 rounded font-bold">
-                    {tile.currentPos + 1}
-                  </span>
-                </div>
-              );
-            })}
-          </div>
-        )}
-
-        {isSolved && (
-          <div className="absolute inset-0 bg-black/75 backdrop-blur-sm flex flex-col items-center justify-center text-white p-6 text-center z-20">
-            <h3 className="text-2xl font-bold font-aesthetic text-emerald-300 mb-1">Puzzle Solved! 🎉</h3>
-            <p className="text-sm font-bold mb-4">Completed in {moves} swaps!</p>
-            <button
-              onClick={initPuzzle}
-              className="bg-[#ADC178] hover:bg-[#68704F] text-white px-6 py-2.5 rounded-full font-bold shadow-lg flex items-center gap-2"
-            >
-              <RotateCcw className="w-4 h-4" /> Play Again
-            </button>
-          </div>
-        )}
+            {p.name}
+          </button>
+        ))}
       </div>
 
-      {/* Controls HUD */}
-      {gameStarted && (
-        <div className="flex items-center justify-between w-full max-w-md mt-3 px-2 text-xs font-bold text-stone-600">
-          <span>Swaps: {moves}</span>
+      {/* Difficulty / Grid Size Selector */}
+      <div className="flex items-center justify-center gap-2 mb-4">
+        <span className="text-[11px] font-bold text-stone-500 uppercase tracking-wider">Grid Size:</span>
+        {[3, 4, 5].map((size) => (
           <button
-            onClick={() => setShowPreview(!showPreview)}
-            className="flex items-center gap-1 text-[#68704F] hover:underline"
+            key={size}
+            onClick={() => setGridSize(size)}
+            className={`text-xs px-2.5 py-1 rounded-lg font-bold transition-all cursor-pointer ${
+              gridSize === size
+                ? 'bg-[#68704F] text-white shadow-sm'
+                : 'bg-stone-100 hover:bg-stone-200 text-stone-600'
+            }`}
           >
-            <Eye className="w-4 h-4" /> {showPreview ? 'Hide Preview' : 'Show Preview'}
+            {size}x{size}
           </button>
-          <button onClick={initPuzzle} className="text-stone-400 hover:text-stone-600">
-            Reshuffle
-          </button>
+        ))}
+      </div>
+
+      {/* Puzzle Board Grid */}
+      <div
+        className="grid gap-1 bg-[#4a5038] p-2 rounded-2xl shadow-inner mx-auto aspect-square max-w-[360px] relative overflow-hidden border border-white/20"
+        style={{
+          gridTemplateColumns: `repeat(${gridSize}, minmax(0, 1fr))`,
+        }}
+      >
+        {pieces.map((pieceVal, tileIdx) => {
+          const row = Math.floor(pieceVal / gridSize);
+          const col = pieceVal % gridSize;
+          const isSelected = selectedPiece === tileIdx;
+          const isCorrect = pieceVal === tileIdx;
+
+          return (
+            <button
+              key={tileIdx}
+              onClick={() => handleTileClick(tileIdx)}
+              className={`relative aspect-square w-full rounded-lg overflow-hidden transition-all duration-200 border-2 cursor-pointer ${
+                isSelected
+                  ? 'border-rose-500 scale-95 shadow-2xl z-10'
+                  : isCorrect && isCompleted
+                  ? 'border-emerald-400'
+                  : 'border-white/50 hover:opacity-90'
+              }`}
+              style={{
+                backgroundImage: `url(${selectedPreset.image})`,
+                backgroundSize: `${gridSize * 100}% ${gridSize * 100}%`,
+                backgroundPosition: `${(col / (gridSize - 1)) * 100}% ${(row / (gridSize - 1)) * 100}%`,
+              }}
+            >
+              {!isCompleted && (
+                <span className="absolute bottom-1 right-1 text-[9px] font-mono bg-black/50 text-white px-1 rounded">
+                  {pieceVal + 1}
+                </span>
+              )}
+            </button>
+          );
+        })}
+      </div>
+
+      {isCompleted && (
+        <div className="mt-4 p-4 rounded-2xl bg-[#ADC178]/20 border border-[#ADC178] text-center animate-bounce">
+          <Trophy className="w-8 h-8 text-amber-500 mx-auto mb-1" />
+          <h4 className="font-serif-title font-bold text-sm text-[#68704F]">Wonderful Job! 🎉</h4>
+          <p className="text-xs text-[#68704F]/90 font-medium">You completed the puzzle in {moves} moves!</p>
         </div>
       )}
 
-      {showPreview && (
-        <div className="mt-3 w-32 h-32 rounded-xl overflow-hidden border-2 border-[#ADC178] shadow">
-          <img src={selectedPhoto} alt="Preview" className="w-full h-full object-cover" />
-        </div>
+      {/* Camera & Filter Studio Modal */}
+      {isCameraStudioOpen && (
+        <CameraFilterStudio
+          onClose={() => setIsCameraStudioOpen(false)}
+          onUseForPuzzle={(filteredDataUrl) => {
+            const customPreset: PuzzlePreset = {
+              id: `custom-cam-${Date.now()}`,
+              name: `Camera Snap 📷`,
+              image: filteredDataUrl,
+              gridSize: gridSize,
+            };
+            setPresets((prev) => [customPreset, ...prev]);
+            setSelectedPreset(customPreset);
+            setIsCameraStudioOpen(false);
+          }}
+        />
       )}
     </div>
   );
 };
+

@@ -5,11 +5,13 @@ import { BlockBreakerGame } from './BlockBreakerGame';
 import { BaseballGame } from './BaseballGame';
 import { SnakeGame } from './SnakeGame';
 import { JigsawPuzzleGame } from './JigsawPuzzleGame';
+import { WarmthCardMatchGame } from './WarmthCardMatchGame';
 
 export const GamesPage: React.FC = () => {
-  const [activeGame, setActiveGame] = useState<'mario' | 'block' | 'baseball' | 'snake' | 'jigsaw'>('mario');
+  const [activeGame, setActiveGame] = useState<'cardmatch' | 'mario' | 'block' | 'baseball' | 'snake' | 'jigsaw'>('cardmatch');
 
   const gamesList = [
+    { id: 'cardmatch', title: 'Warmth Card Match', icon: '🎴', desc: 'Flip cards to match warm memory pairs!' },
     { id: 'mario', title: 'Super Mario & Defender', icon: '🍄', desc: 'Jump, collect coins & shoot fireball hearts!' },
     { id: 'block', title: 'Block Breaker', icon: '🧱', desc: 'Bounce the glowing sphere & smash blocks!' },
     { id: 'baseball', title: 'Home Run Derby', icon: '⚾', desc: 'Time your swing & smash baseballs over the fence!' },
@@ -50,6 +52,7 @@ export const GamesPage: React.FC = () => {
 
       {/* Active Game Display */}
       <div className="flex justify-center">
+        {activeGame === 'cardmatch' && <WarmthCardMatchGame />}
         {activeGame === 'mario' && <MarioShooterGame />}
         {activeGame === 'block' && <BlockBreakerGame />}
         {activeGame === 'baseball' && <BaseballGame />}

@@ -1,15 +1,17 @@
 import React, { useState, useEffect } from 'react';
-import { Camera, Heart, Plus, MapPin, Calendar, Tag, X, Image as ImageIcon, Sparkles } from 'lucide-react';
+import { Camera, Heart, Plus, MapPin, Calendar, Tag, X, Image as ImageIcon, Sparkles, Wand2, Trash2 } from 'lucide-react';
 import { DEFAULT_MEMORIES, MemoryPhoto } from '../data/content';
+import { CameraFilterStudio } from './CameraFilterStudio';
 import confetti from 'canvas-confetti';
 
 export const MemoriesPage: React.FC = () => {
   const [memories, setMemories] = useState<MemoryPhoto[]>(DEFAULT_MEMORIES);
   const [selectedTag, setSelectedTag] = useState<string>('all');
   const [activePhoto, setActivePhoto] = useState<MemoryPhoto | null>(null);
-  const [likes, setLikes] = useState<{ [key: string]: number }>({ '1': 12, '2': 8, '3': 15 });
+  const [likes, setLikes] = useState<{ [key: string]: number }>({ '1': 12, '3': 15 });
 
   const [isAdding, setIsAdding] = useState(false);
+  const [isCameraStudioOpen, setIsCameraStudioOpen] = useState(false);
   const [newTitle, setNewTitle] = useState('');
   const [newDate, setNewDate] = useState('');
   const [newLocation, setNewLocation] = useState('');
@@ -21,10 +23,39 @@ export const MemoriesPage: React.FC = () => {
     const saved = localStorage.getItem('openmeup_user_memories');
     if (saved) {
       try {
-        setMemories(JSON.parse(saved));
-      } catch {}
+        const parsed: MemoryPhoto[] = JSON.parse(saved);
+        // Clean out all initial default memories (IDs '1', '2', '3', '4', '5')
+        const userOnly = parsed.filter(
+          (m) =>
+            m.id !== '1' &&
+            m.id !== '2' &&
+            m.id !== '3' &&
+            m.id !== '4' &&
+            m.id !== '5' &&
+            !m.title.toLowerCase().includes('puppy park') &&
+            !m.title.toLowerCase().includes('late night games') &&
+            !m.title.toLowerCase().includes('warm coffee') &&
+            !m.title.toLowerCase().includes('sunset beach') &&
+            !m.title.toLowerCase().includes('birthday candle')
+        );
+        setMemories(userOnly);
+        localStorage.setItem('openmeup_user_memories', JSON.stringify(userOnly));
+      } catch {
+        setMemories([]);
+      }
+    } else {
+      localStorage.setItem('openmeup_user_memories', JSON.stringify([]));
+      setMemories([]);
     }
   }, []);
+
+  const handleDeleteMemory = (id: string, e: React.MouseEvent) => {
+    e.stopPropagation();
+    const updated = memories.filter((m) => m.id !== id);
+    setMemories(updated);
+    localStorage.setItem('openmeup_user_memories', JSON.stringify(updated));
+    if (activePhoto?.id === id) setActivePhoto(null);
+  };
 
   const handleAddMemory = (e: React.FormEvent) => {
     e.preventDefault();
@@ -83,12 +114,21 @@ export const MemoriesPage: React.FC = () => {
           </p>
         </div>
 
-        <button
-          onClick={() => setIsAdding(true)}
-          className="flex items-center gap-2 px-5 py-2.5 rounded-2xl bg-[#ADC178] hover:bg-white text-[#4a5038] text-xs font-bold shadow-md transition-all hover:scale-105 cursor-pointer"
-        >
-          <Plus className="w-4 h-4" /> Add New Memory
-        </button>
+        <div className="flex flex-wrap items-center gap-2">
+          <button
+            onClick={() => setIsCameraStudioOpen(true)}
+            className="flex items-center gap-2 px-4 py-2.5 rounded-2xl bg-white/20 hover:bg-white/30 text-white border border-white/30 text-xs font-bold shadow-md transition-all hover:scale-105 cursor-pointer backdrop-blur-md"
+          >
+            <Camera className="w-4 h-4 text-[#ADC178]" /> Camera & Filters 📸
+          </button>
+
+          <button
+            onClick={() => setIsAdding(true)}
+            className="flex items-center gap-2 px-5 py-2.5 rounded-2xl bg-[#ADC178] hover:bg-white text-[#4a5038] text-xs font-bold shadow-md transition-all hover:scale-105 cursor-pointer"
+          >
+            <Plus className="w-4 h-4" /> Add New Memory
+          </button>
+        </div>
       </div>
 
       {/* Tag Filters */}
@@ -110,6 +150,45 @@ export const MemoriesPage: React.FC = () => {
 
       {/* Polaroid Grid */}
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
+        {/* Quick Action Card 1: Camera & Filter Studio */}
+        <div
+          onClick={() => setIsCameraStudioOpen(true)}
+          className="group bg-white/90 hover:bg-white backdrop-blur-xl p-5 rounded-[28px] border-2 border-dashed border-[#ADC178] shadow-xl hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-2 cursor-pointer relative text-slate-800 flex flex-col items-center justify-center text-center min-h-[300px]"
+        >
+          <div className="w-16 h-16 rounded-full bg-[#ADC178]/25 group-hover:bg-[#ADC178] text-[#4a5038] group-hover:text-white flex items-center justify-center transition-colors mb-4 shadow-md">
+            <Camera className="w-8 h-8" />
+          </div>
+          <h3 className="font-bold italic text-xl text-[#68704F] mb-2 font-serif-title">
+            Camera & Filter Studio 📸
+          </h3>
+          <p className="text-stone-500 text-xs font-medium max-w-[220px] mb-4">
+            Snap a live picture or upload a photo with cozy vintage filters & date stamps.
+          </p>
+          <span className="px-4 py-2 rounded-full bg-[#68704F] text-white text-xs font-bold shadow-md group-hover:scale-105 transition-transform">
+            Open Camera Studio
+          </span>
+        </div>
+
+        {/* Quick Action Card 2: Add Memory Card */}
+        <div
+          onClick={() => setIsAdding(true)}
+          className="group bg-white/90 hover:bg-white backdrop-blur-xl p-5 rounded-[28px] border-2 border-dashed border-[#ADC178]/60 shadow-xl hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-2 cursor-pointer relative text-slate-800 flex flex-col items-center justify-center text-center min-h-[300px]"
+        >
+          <div className="w-16 h-16 rounded-full bg-[#68704F]/15 group-hover:bg-[#68704F] text-[#68704F] group-hover:text-white flex items-center justify-center transition-colors mb-4 shadow-md">
+            <Plus className="w-8 h-8" />
+          </div>
+          <h3 className="font-bold italic text-xl text-[#68704F] mb-2 font-serif-title">
+            + Add Memory Card
+          </h3>
+          <p className="text-stone-500 text-xs font-medium max-w-[220px] mb-4">
+            Create another custom memory card with your title, date, location & story.
+          </p>
+          <span className="px-4 py-2 rounded-full bg-[#ADC178] text-[#4a5038] text-xs font-bold shadow-md group-hover:scale-105 transition-transform">
+            Add Memory Card
+          </span>
+        </div>
+
+        {/* User Created Memory Cards */}
         {filtered.map((item) => (
           <div
             key={item.id}
@@ -126,6 +205,13 @@ export const MemoriesPage: React.FC = () => {
               <span className="absolute top-2 right-2 px-2.5 py-1 rounded-full bg-black/60 backdrop-blur-md text-white text-[10px] font-bold capitalize">
                 {item.tag}
               </span>
+              <button
+                onClick={(e) => handleDeleteMemory(item.id, e)}
+                className="absolute top-2 left-2 p-1.5 rounded-full bg-black/50 hover:bg-rose-600 text-white transition-colors opacity-0 group-hover:opacity-100 cursor-pointer backdrop-blur-sm"
+                title="Delete memory"
+              >
+                <Trash2 className="w-3.5 h-3.5" />
+              </button>
             </div>
 
             {/* Polaroid Text & Caption */}
@@ -274,6 +360,18 @@ export const MemoriesPage: React.FC = () => {
             </p>
           </div>
         </div>
+      )}
+      {/* Camera & Filter Studio Modal */}
+      {isCameraStudioOpen && (
+        <CameraFilterStudio
+          onClose={() => setIsCameraStudioOpen(false)}
+          onSaveToMemories={(newMemory) => {
+            const updated = [newMemory, ...memories];
+            setMemories(updated);
+            localStorage.setItem('openmeup_user_memories', JSON.stringify(updated));
+            setIsCameraStudioOpen(false);
+          }}
+        />
       )}
     </div>
   );
